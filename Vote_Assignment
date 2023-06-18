@@ -1,0 +1,136 @@
+1. Commands that you used during the assignment.
+
+
+    kubectl delete all --all
+    kubectl get nodes
+    kubectl describe ip-172-31-2-24.ap-southeast-1.compute.internal
+    kubectl describe worker ip-172-31-2-24.ap-southeast-1.compute.internal
+    kubectl describe node ip-172-31-2-24.ap-southeast-1.compute.internal
+    kubectl describe node ip-172-31-10-221.ap-southeast-1.compute.internal
+    kubectl apply -f .
+	kubectl get pods
+	kubectl logs result-5d57b59f4b-k2s66
+	kubectl delete pod vote-94849dc97-9tbm8
+	kubectl get pods
+	kubectl delete pod vote-94849dc97-5mcjf
+	kubectl get pods
+	kubectl delete pod worker-dd46d7584-rxq5s
+	kubectl delete db-b54cd94f4-q2xsd
+	kubectl get pods
+
+
+2. snapshot of logs (wherever possible)
+
+LOgs: on selecting cat
+
+
+[2023-06-13 05:40:55,097] INFO in app: Received vote for a
+[2023-06-13 05:40:55 +0000] [9] [INFO] Received vote for a
+192.168.208.0 - - [13/Jun/2023:05:40:55 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.161.117:31000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+192.168.208.0 - - [13/Jun/2023:05:40:55 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.161.117:31000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+
+
+On voting for Dog:
+
+[2023-06-13 05:41:51,607] INFO in app: Received vote for b
+[2023-06-13 05:41:51 +0000] [10] [INFO] Received vote for b
+192.168.208.0 - - [13/Jun/2023:05:41:51 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.161.117:31000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+192.168.208.0 - - [13/Jun/2023:05:41:51 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.161.117:31000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+
+
+==================
+
+
+When deleted db pod:
+
+
+- Another Db pod comes up,
+- I see result pod and worker pod are getting restarted 
+- I see there are zero votes in result, the old data got deleted.
+
+
+
+
+
+Please find the logs:
+
+Worker node:
+
+Npgsql.NpgsqlException (0x80004005): Exception while reading from stream
+ ---> System.IO.EndOfStreamException: Attempted to read past the end of the stream.
+   at Npgsql.NpgsqlReadBuffer.<>c__DisplayClass30_0.<<Ensure>g__EnsureLong|0>d.MoveNext()
+   at Npgsql.NpgsqlReadBuffer.<>c__DisplayClass30_0.<<Ensure>g__EnsureLong|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Npgsql.NpgsqlConnector.<>c__DisplayClass160_0.<<DoReadMessage>g__ReadMessageLong|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReaderAsync(CommandBehavior behavior, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Worker.Program.Main(String[] args) in /source/Program.cs:line 67
+
+
+Result node:
+
+node:events:491
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: Connection terminated unexpectedly
+    at Connection.<anonymous> (/node_modules/pg/lib/client.js:132:73)
+    at Object.onceWrapper (node:events:627:28)
+    at Connection.emit (node:events:513:28)
+    at Socket.<anonymous> (/node_modules/pg/lib/connection.js:107:12)
+    at Socket.emit (node:events:525:35)
+    at endReadableNT (node:internal/streams/readable:1359:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+Emitted 'error' event on Client instance at:
+    at Client._handleErrorEvent (/node_modules/pg/lib/client.js:319:10)
+    at Connection.<anonymous> (/node_modules/pg/lib/client.js:149:16)
+    at Object.onceWrapper (node:events:627:28)
+    [... lines matching original stack trace ...]
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+
+Node.js v18.12.1
+
+=============================================
+
+when deleted Vote pod:
+
+- Another pod will comeup first, then we terminate existing pod. And we can give vote in web page and it will be handled by new pod.
+
+
+=============================================
+
+when deleted worker pod:
+
+- Another pod is coming up, before terminating existing pod. On Web page, It is working fine. Like showing existing vote count.
+
+=============================================
+
+
+
+3. your comment on WHY result app STOPPED working after db pod stop
+
+After db pod is down. Result pod will connect with new pod, after restart and It connects to new pod and there is no Vote table. So, it is not showing the old data.
+
+
+4. your answer to HOW YOU MADE THE RESULT POD work
+
+One way is
+
+    I have added hostpath in Volume. So, that the data is stored in node. After deleting pod also. I can see the votes in Web page.
+	
+	or Create a PV, PVC and use that so that data is persistent.
+
+
+5.  Some jargons (just names are enough- dont need sentences) that you learnt from the 40-hour Training session
+
+
+	Containers, Docker, DockerFile, Docker hub, docker push, pull, docker images, exec
+    Microservices,kubernetes,kubectl,Nodes,Pod,Services,configMap,deployement,Controllers,Volumes,Helm charts,Storage,Calico,Istio.
+
+Observation:
+
+- We could have combine service yaml also in deployment yaml right ?
