@@ -1,0 +1,2 @@
+- For logging, health check we can use Daemon set. so that it can be running in all nodes.
+ we can get the logs from each node and store it in some central repository.
