@@ -1,0 +1,9 @@
+- As replica set is 1, need to add rolling update as below
+
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+
+If max replica set can be 2, max unavailable will be 0. So that there will be always one pod.
