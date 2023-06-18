@@ -1,0 +1,7 @@
+Q>  You have deployed an application, that is listening at port 8000. You used a replica-set to deploy it and created a NodePort service to make it accessible. But when you test it, somehow the application is not reachable at the port. Write down your approach and sequentially all the steps that you will take to find out the issue.
+
+Ans:
+
+- first, I will check if all pods are running as given in replica set. If not need to make them run.
+- then kubectl get svc, and check if the node port mapped to 8000. Is the correct node port which Iam using to send the request.
+- If nodeport is also correct, then need to check if 8000 port is running in the system and Check in deployement if 8000 is exposed and mapped to node port.
